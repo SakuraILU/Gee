@@ -1,50 +1,41 @@
 package gee
 
 import (
-	"fmt"
 	log "gee/Log"
 	"net/http"
 )
 
-type HandleFn func(http.ResponseWriter, *http.Request)
-
 type Engine struct {
-	router map[string]HandleFn
+	router *Router
 }
 
 func New() (e *Engine) {
 	return &Engine{
-		router: make(map[string]HandleFn),
+		router: newRouter(),
 	}
-}
-
-func (e *Engine) addRouter(key string, fn HandleFn) {
-	log.Infof("add router key %v", key)
-	e.router[key] = fn
 }
 
 func (e *Engine) GET(pattern string, fn HandleFn) {
 	key := "GET" + "-" + pattern
-	e.addRouter(key, fn)
+	e.router.addRouter(key, fn)
 }
 
 func (e *Engine) POST(pattern string, fn HandleFn) {
 	key := "POST" + "-" + pattern
-	e.addRouter(key, fn)
+	e.router.addRouter(key, fn)
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	key := req.Method + "-" + req.URL.Path
-	handler, ok := e.router[key]
-	if !ok {
-		err := fmt.Errorf("key %v is not found", key)
-		log.Errorf(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+	c := newContext(w, req)
+
+	key := c.Method + "-" + c.Path
+	handler, err := e.router.getRouter(key)
+	if err != nil {
+		c.String(http.StatusNotFound, err.Error())
 		return
 	}
 
-	handler(w, req)
+	handler(c)
 }
 
 func (e *Engine) Run(addr string) (err error) {
