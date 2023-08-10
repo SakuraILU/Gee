@@ -34,6 +34,5 @@ func main() {
 		})
 	}
 
-	r.Static("/asserts", "Filesystem")
 	r.Run(":9999")
 }
