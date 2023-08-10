@@ -16,26 +16,19 @@ func New() (e *Engine) {
 }
 
 func (e *Engine) GET(pattern string, fn HandleFn) {
-	key := "GET" + "-" + pattern
-	e.router.addRouter(key, fn)
+	e.router.addHandler("GET", pattern, fn)
 }
 
 func (e *Engine) POST(pattern string, fn HandleFn) {
-	key := "POST" + "-" + pattern
-	e.router.addRouter(key, fn)
+	e.router.addHandler("POST", pattern, fn)
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	c := newContext(w, req)
 
-	key := c.Method + "-" + c.Path
-	handler, err := e.router.getRouter(key)
-	if err != nil {
-		c.String(http.StatusNotFound, err.Error())
+	if err := e.router.handle(c); err != nil {
 		return
 	}
-
-	handler(c)
 }
 
 func (e *Engine) Run(addr string) (err error) {

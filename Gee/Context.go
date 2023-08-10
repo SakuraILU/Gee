@@ -14,6 +14,8 @@ type Context struct {
 	Method     string
 	Path       string
 	StatusCode int
+
+	Params map[string]string
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) (c *Context) {
@@ -23,6 +25,7 @@ func newContext(w http.ResponseWriter, req *http.Request) (c *Context) {
 		Method:     req.Method,
 		Path:       req.URL.Path,
 		StatusCode: http.StatusOK,
+		Params:     make(map[string]string),
 	}
 }
 
@@ -40,14 +43,11 @@ func (c *Context) HTML(code int, html string) {
 func (c *Context) JSON(code int, obj any) {
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.SetCode(code)
-	buf, err := json.Marshal(obj)
-	if err != nil {
+	if err := json.NewEncoder(c.Writer).Encode(obj); err != nil {
 		log.Error(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
-		c.Writer.Write([]byte(err.Error()))
 		return
 	}
-	c.Writer.Write(buf)
 }
 
 func (c *Context) DATA(code int, data []byte) {
@@ -68,4 +68,8 @@ func (c *Context) Query(key string) string {
 // get the value corresponding to the key (key, value) pair in the POST request
 func (c *Context) PostForm(key string) string {
 	return c.Req.PostFormValue(key)
+}
+
+func (c *Context) Param(key string) string {
+	return c.Params[key]
 }
