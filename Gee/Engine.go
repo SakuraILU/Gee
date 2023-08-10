@@ -35,3 +35,11 @@ func (e *Engine) Run(addr string) (err error) {
 	log.Infof("Service is listening at %v", addr)
 	return http.ListenAndServe(addr, e)
 }
+
+func (e *Engine) Group(prefix string) (g *Group) {
+	g = &Group{
+		prefix: prefix,
+		engine: e,
+	}
+	return
+}

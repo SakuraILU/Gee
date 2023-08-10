@@ -37,7 +37,7 @@ func (c *Context) String(code int, format string, vs ...any) {
 func (c *Context) HTML(code int, html string) {
 	c.SetCode(code)
 	c.Writer.Header().Set("Content-Type", "application/html")
-	c.Writer.Write([]byte(html))
+	c.Writer.Write([]byte(html + "\n"))
 }
 
 func (c *Context) JSON(code int, obj any) {
