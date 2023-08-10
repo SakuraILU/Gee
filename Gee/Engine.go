@@ -3,15 +3,21 @@ package gee
 import (
 	log "gee/Log"
 	"net/http"
+	"strings"
 )
 
 type Engine struct {
 	router *Router
+
+	groups      []*Group
+	middlewares []HandleFn
 }
 
 func New() (e *Engine) {
 	return &Engine{
-		router: newRouter(),
+		router:      newRouter(),
+		groups:      make([]*Group, 0),
+		middlewares: make([]HandleFn, 0),
 	}
 }
 
@@ -26,6 +32,13 @@ func (e *Engine) POST(pattern string, fn HandleFn) {
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	c := newContext(w, req)
 
+	c.handlers = append(c.handlers, e.middlewares...)
+	for _, g := range e.groups {
+		if strings.HasPrefix(c.Path, g.prefix) {
+			c.handlers = append(c.handlers, g.middlewares...)
+		}
+	}
+
 	if err := e.router.handle(c); err != nil {
 		return
 	}
@@ -37,9 +50,9 @@ func (e *Engine) Run(addr string) (err error) {
 }
 
 func (e *Engine) Group(prefix string) (g *Group) {
-	g = &Group{
-		prefix: prefix,
-		engine: e,
-	}
-	return
+	return newGroup(""+prefix, e)
+}
+
+func (e *Engine) Use(middleware HandleFn) {
+	e.middlewares = append(e.middlewares, middleware)
 }

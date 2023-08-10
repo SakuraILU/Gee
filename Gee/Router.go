@@ -36,6 +36,8 @@ func (r *Router) handle(c *Context) (err error) {
 		log.Error(err)
 		return
 	}
+	c.Params = parseParams(pattern, c.Path)
+
 	key := keyGen(c.Method, pattern)
 	handler, ok := r.handlers[key]
 	if !ok {
@@ -43,10 +45,10 @@ func (r *Router) handle(c *Context) (err error) {
 		c.String(http.StatusNotFound, err.Error())
 		log.Error(err)
 	}
+	c.handlers = append(c.handlers, handler)
 
-	c.Params = parseParams(pattern, c.Path)
+	c.Next()
 
-	handler(c)
 	return
 }
 

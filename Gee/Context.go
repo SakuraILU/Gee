@@ -10,12 +10,15 @@ import (
 type Context struct {
 	Writer http.ResponseWriter
 	Req    *http.Request
-
+	// request info
 	Method     string
 	Path       string
 	StatusCode int
-
+	// url params
 	Params map[string]string
+	// middleware and handler
+	handlers []HandleFn
+	index    int
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) (c *Context) {
@@ -26,6 +29,8 @@ func newContext(w http.ResponseWriter, req *http.Request) (c *Context) {
 		Path:       req.URL.Path,
 		StatusCode: http.StatusOK,
 		Params:     make(map[string]string),
+		handlers:   make([]HandleFn, 0),
+		index:      -1,
 	}
 }
 
@@ -55,6 +60,11 @@ func (c *Context) DATA(code int, data []byte) {
 	c.Writer.Write(data)
 }
 
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
+}
+
 func (c *Context) SetCode(code int) {
 	c.Writer.WriteHeader(code)
 	c.StatusCode = code
@@ -72,4 +82,9 @@ func (c *Context) PostForm(key string) string {
 
 func (c *Context) Param(key string) string {
 	return c.Params[key]
+}
+
+func (c *Context) Next() {
+	c.index++
+	c.handlers[c.index](c)
 }

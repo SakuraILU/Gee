@@ -1,15 +1,24 @@
 package gee
 
 type Group struct {
-	prefix string
-	engine *Engine
+	prefix      string
+	engine      *Engine
+	middlewares []HandleFn
 }
 
-func (g *Group) Group(prefix string) *Group {
-	return &Group{
-		prefix: g.prefix + prefix,
-		engine: g.engine,
+func newGroup(prefix string, engine *Engine) (g *Group) {
+	g = &Group{
+		prefix:      prefix,
+		engine:      engine,
+		middlewares: make([]HandleFn, 0),
 	}
+	engine.groups = append(engine.groups, g)
+	return
+}
+
+func (g *Group) Group(prefix string) (ng *Group) {
+	ng = newGroup(g.prefix+prefix, g.engine)
+	return
 }
 
 func (g *Group) GET(pattern string, handler HandleFn) {
@@ -18,4 +27,8 @@ func (g *Group) GET(pattern string, handler HandleFn) {
 
 func (g *Group) POST(pattern string, handler HandleFn) {
 	g.engine.POST(g.prefix+pattern, handler)
+}
+
+func (g *Group) Use(middleware HandleFn) {
+	g.middlewares = append(g.middlewares, middleware)
 }
