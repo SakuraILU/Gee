@@ -1,7 +1,6 @@
 package trie
 
 import (
-	log "gee/Log"
 	"strings"
 )
 
@@ -25,7 +24,7 @@ func (t *Trie) Insert(pattern string) {
 }
 
 func (t *Trie) Search(url string) (pattern string) {
-	log.Infof("Searching url: %s", url)
+	// log.Infof("Searching url: %s", url)
 	parts := splitPath(url)
 
 	n := t.root.search(parts)

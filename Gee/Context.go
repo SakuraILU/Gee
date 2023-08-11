@@ -61,6 +61,7 @@ func (c *Context) DATA(code int, data []byte) {
 }
 
 func (c *Context) Fail(code int, err string) {
+	// if err occurs, stop subsequential calls of handlers (middlewares or handler)
 	c.index = len(c.handlers)
 	c.JSON(code, H{"message": err})
 }
@@ -86,5 +87,7 @@ func (c *Context) Param(key string) string {
 
 func (c *Context) Next() {
 	c.index++
-	c.handlers[c.index](c)
+	if c.index < len(c.handlers) {
+		c.handlers[c.index](c)
+	}
 }

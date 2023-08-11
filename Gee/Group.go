@@ -29,6 +29,6 @@ func (g *Group) POST(pattern string, handler HandleFn) {
 	g.engine.POST(g.prefix+pattern, handler)
 }
 
-func (g *Group) Use(middleware HandleFn) {
-	g.middlewares = append(g.middlewares, middleware)
+func (g *Group) Use(middleware ...HandleFn) {
+	g.middlewares = append(g.middlewares, middleware...)
 }

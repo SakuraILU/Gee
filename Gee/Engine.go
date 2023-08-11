@@ -21,6 +21,17 @@ func New() (e *Engine) {
 	}
 }
 
+func Default() (e *Engine) {
+	e = &Engine{
+		router:      newRouter(),
+		groups:      make([]*Group, 0),
+		middlewares: make([]HandleFn, 0),
+	}
+	e.Use(Logger(), Recovery())
+
+	return
+}
+
 func (e *Engine) GET(pattern string, fn HandleFn) {
 	e.router.addHandler("GET", pattern, fn)
 }
@@ -53,8 +64,8 @@ func (e *Engine) Group(prefix string) (g *Group) {
 	return newGroup(""+prefix, e)
 }
 
-func (e *Engine) Use(middleware HandleFn) {
-	e.middlewares = append(e.middlewares, middleware)
+func (e *Engine) Use(middleware ...HandleFn) {
+	e.middlewares = append(e.middlewares, middleware...)
 }
 
 func (e *Engine) Static(url_prefix, dir_path string) {
