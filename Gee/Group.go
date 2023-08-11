@@ -32,3 +32,7 @@ func (g *Group) POST(pattern string, handler HandleFn) {
 func (g *Group) Use(middleware ...HandleFn) {
 	g.middlewares = append(g.middlewares, middleware...)
 }
+
+func (g *Group) Static(url_dir_path, dir_path string) {
+	g.engine.Static(g.prefix+url_dir_path, dir_path)
+}

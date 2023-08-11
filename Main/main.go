@@ -23,6 +23,6 @@ func main() {
 		})
 	}
 
-	r.Static("/asserts", "Filesystem")
+	v2.Static("/asserts", "Filesystem")
 	r.Run(":9999")
 }

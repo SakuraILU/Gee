@@ -28,6 +28,10 @@ func (t *Trie) Search(url string) (pattern string) {
 	parts := splitPath(url)
 
 	n := t.root.search(parts)
+	if n == nil {
+		return ""
+	}
+
 	return n.pattern
 }
 

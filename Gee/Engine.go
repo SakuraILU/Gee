@@ -68,11 +68,11 @@ func (e *Engine) Use(middleware ...HandleFn) {
 	e.middlewares = append(e.middlewares, middleware...)
 }
 
-func (e *Engine) Static(url_prefix, dir_path string) {
-	pattern := url_prefix + "/*filerelpath"
+func (e *Engine) Static(url_dir_path, dir_path string) {
+	pattern := url_dir_path + "/*filerelpath"
 	dir := http.Dir(dir_path)
 	fs := http.FileServer(dir)
-	fs = http.StripPrefix(url_prefix, fs)
+	fs = http.StripPrefix(url_dir_path, fs)
 	e.GET(pattern, func(ctx *Context) {
 		fs.ServeHTTP(ctx.Writer, ctx.Req)
 	})
